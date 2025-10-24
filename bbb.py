@@ -450,7 +450,7 @@ def main():
                         # 检查是否到达出口
                         if maze[player_pos[0]][player_pos[1]] == 2:
                             win = True
-                            hint_text = "恭喜通关!🎉"
+                            hint_text = "恭喜通关!"
                             hint_until = current_time + 5000
         
             # 敌人追踪玩家
@@ -459,7 +459,7 @@ def main():
             # 检查是否被追上
             if tuple(player_pos) == enemy.pos:
                 game_over = True
-                hint_text = "被追上了!游戏结束!💀"
+                hint_text = "被追上了!游戏结束!"
                 hint_until = current_time + 5000
         
         # 绘制场景 - 先绘制迷宫
