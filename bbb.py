@@ -277,15 +277,43 @@ class Enemy:
             pygame.draw.rect(screen, (100, 0, 150), rect)
 
 
-def draw_goal(screen, goal_pos):
+def draw_goal(screen, goal_pos, current_time):
     x, y = to_display_coords(goal_pos)
+    center_x = x + TILE_SIZE // 2
+    center_y = y + TILE_SIZE // 2
     
-    # 如果有终点贴图，使用贴图
+    # 闪烁效果 - 使用正弦波
+    pulse = abs(math.sin(current_time / 300))  # 300ms周期
+    
+    # 如果有终点贴图
     if goal_tex:
+        # 绘制光晕效果
+        glow_radius = int(TILE_SIZE * (1.2 + pulse * 0.3))
+        glow_color = (255, 255, 0, int(100 * pulse))
+        glow_surf = pygame.Surface((glow_radius * 2, glow_radius * 2), pygame.SRCALPHA)
+        pygame.draw.circle(glow_surf, glow_color, (glow_radius, glow_radius), glow_radius)
+        screen.blit(glow_surf, (center_x - glow_radius, center_y - glow_radius))
+        
+        # 绘制贴图
         screen.blit(goal_tex, (x + 2, y + 2))
     else:
-        # 否则使用默认的黄色椭圆
-        pygame.draw.ellipse(screen, (255, 255, 0), (x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4))
+        # 绘制光晕层
+        for i in range(3):
+            radius = int(TILE_SIZE * (0.8 + i * 0.3 + pulse * 0.4))
+            alpha = int(80 - i * 20)
+            glow_surf = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+            pygame.draw.circle(glow_surf, (255, 255, 0, alpha), (radius, radius), radius)
+            screen.blit(glow_surf, (center_x - radius, center_y - radius))
+        
+        # 绘制主体 - 明亮的黄色椭圆
+        bright_yellow = (255, 255, int(150 + 105 * pulse))
+        pygame.draw.ellipse(screen, bright_yellow, (x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4))
+        
+        # 绘制内圈高光
+        highlight = (255, 255, 255, int(200 * pulse))
+        highlight_surf = pygame.Surface((TILE_SIZE - 8, TILE_SIZE - 8), pygame.SRCALPHA)
+        pygame.draw.ellipse(highlight_surf, highlight, (0, 0, TILE_SIZE - 8, TILE_SIZE - 8))
+        screen.blit(highlight_surf, (x + 4, y + 4))
 
 
 def generate_and_setup(rows=31, cols=31, extra_passages=60):
@@ -468,8 +496,8 @@ def main():
         # 绘制迷宫
         draw_maze(screen, maze)
         
-        # 绘制出口 - 使用draw_goal函数
-        draw_goal(screen, exit_cell)
+        # 绘制出口 - 使用draw_goal函数，传入时间实现闪烁效果
+        draw_goal(screen, exit_cell, current_time)
         
         # 绘制敌人
         enemy.draw(screen)
